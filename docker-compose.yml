@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+    app-nginx:
+        build:
+            context: ./docker
+            dockerfile: nginx.docker
+        volumes:
+            - ./:/app
+        depends_on:
+            - app-php-fpm
+        ports:
+            - "8585:80"
+    app-php-fpm:
+        build:
+            context: ./docker
+            dockerfile: php-fpm.docker
+        depends_on:
+            - app-postgres
+        volumes:
+            - ./:/app
+    app-php-cli:
+        build:
+            context: ./docker
+            dockerfile: php-cli.docker
+        depends_on:
+            - app-postgres
+        volumes:
+            - ./:/app
+            - composer:/root/.composer/cache
+    app-postgres:
+        image: postgres:12-alpine
+        volumes:
+            - app-postgres:/var/lib/postgresql/data
+        environment:
+            POSTGRES_USER: app
+            POSTGRES_PASSWORD: secret
+            POSTGRES_DB: app
+        ports:
+            - "54321:5432"
+
+volumes:
+    app-postgres:
+    composer:
